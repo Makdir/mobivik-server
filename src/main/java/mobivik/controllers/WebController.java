@@ -71,7 +71,7 @@ public class WebController {
 
 
 
-    @GetMapping(path = "/test")
+    @RequestMapping("/test")
     public JSONObject sayHello()
     {
         return new JSONObject("{'aa':'bb'}");
