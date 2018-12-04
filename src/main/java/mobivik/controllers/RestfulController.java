@@ -2,6 +2,7 @@ package mobivik.controllers;
 
 
 import org.json.JSONObject;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.RememberMeAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -10,10 +11,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
-public class WebController {
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import javax.servlet.http.HttpServletRequest;
 
-    @RequestMapping(value={"/","/index","/default","/home","/welcome"})
+@RestController
+public class RestfulController {
+
+    @RequestMapping(value={"/","/index","/default","/home"})
     public String home(Model model){
 
         String username = null;
@@ -34,13 +38,6 @@ public class WebController {
         return "admin";
     }
    
-    @RequestMapping(value={"/login"})
-    public String login(Model model) {
-        if (isRememberMeAuthenticated()) {
-            System.out.println("isRememberMeAuthenticated="+isRememberMeAuthenticated());
-        }
-        return "login";
-    }
     /**
      *   Login form with error
      */
@@ -70,10 +67,17 @@ public class WebController {
     }
 
 
-
-    @RequestMapping("/test")
-    public JSONObject sayHello()
+    @RequestMapping(value = "/test",  method = RequestMethod.GET)
+    @ResponseBody
+    public String sayHello(HttpServletRequest request)
     {
-        return new JSONObject("{'aa':'bb'}");
+        String result;
+        try {
+            String agentCode = request.getHeader("agent-code").trim();
+            result = agentCode;
+        }catch (Exception e){
+            result = String.valueOf(e);
+        }
+        return  result;
     }
 }
