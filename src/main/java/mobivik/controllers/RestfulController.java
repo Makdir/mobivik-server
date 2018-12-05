@@ -13,63 +13,17 @@ import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import javax.servlet.http.HttpServletRequest;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Scanner;
 
 @RestController
 public class RestfulController {
 
-    @RequestMapping(value={"/","/index","/default","/home"})
-    public String home(Model model){
-
-        String username = null;
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof UserDetails) {
-            username = ((UserDetails) principal).getUsername();
-        } else {
-            username = principal.toString();
-        }
-        model.addAttribute("username", username);
-
-        return "index";
-    }
-
-    @RequestMapping(value="/admin")
-    public String admin(){
-
-        return "admin";
-    }
-   
-    /**
-     *   Login form with error
-     */
-    @RequestMapping("/login-error")
-    public String loginError(Model model) {
-        model.addAttribute("loginError", true);
-        return "login";
-    }
-
-    @RequestMapping(value="/403")
-    public String accessDenied(){
-        return "403";
-    }
-
-    /**
-     * Check if user is login by remember me cookie, refer
-     * org.springframework.security.authentication.AuthenticationTrustResolverImpl
-     */
-    private boolean isRememberMeAuthenticated() {
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            return false;
-        }
-
-        return RememberMeAuthenticationToken.class.isAssignableFrom(authentication.getClass());
-    }
-
-
     @RequestMapping(value = "/test",  method = RequestMethod.GET)
     @ResponseBody
-    public String sayHello(HttpServletRequest request)
+    public String testing(HttpServletRequest request)
     {
         String result;
         try {
@@ -79,5 +33,52 @@ public class RestfulController {
             result = String.valueOf(e);
         }
         return  result;
+    }
+
+    @RequestMapping(value = "/fromserver", method = RequestMethod.GET)
+    @ResponseBody
+    public String fromServer(HttpServletRequest request)
+    {
+        String result;
+        String agentCode = null;
+        try {
+            agentCode = request.getHeader("agent-code").trim();
+            result = agentCode;
+        }catch (Exception e){
+            result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
+        }
+
+        try {
+            result = getFileContent(agentCode);
+        }catch(Exception e){
+            result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
+        }
+
+        return  result;
+    }
+
+    private String getFileContent(String agentCode) throws Exception {
+        StringBuilder fileContent = new StringBuilder();
+        try(FileReader reader = new FileReader(new StringBuilder().append("D:\\Development\\mobiviks\\").append(agentCode).append("ad.mv").toString()))
+        {
+            Scanner scan = new Scanner(reader);
+            String line;
+            while (scan.hasNextLine()) {
+                fileContent.append(scan.nextLine());
+            }
+            reader.close();
+            scan.close();
+
+        }
+        catch(IOException e){
+
+            fileContent.append("{\"error\": \"").append(e.getMessage()).append("\"}");
+        }
+            return fileContent.toString().trim();
+    }
+
+    private String makeErrorRespond(){
+
+        return null;
     }
 }
