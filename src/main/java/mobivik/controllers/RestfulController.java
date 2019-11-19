@@ -13,8 +13,9 @@ import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import javax.servlet.http.HttpServletRequest;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Scanner;
 
@@ -25,19 +26,19 @@ public class RestfulController {
     @ResponseBody
     public String testing(HttpServletRequest request)
     {
-        String result;
+        String result = "Connected with exception";
         try {
             String agentCode = request.getHeader("agent-code").trim();
             result = agentCode;
         }catch (Exception e){
-            result = String.valueOf(e);
+            //result = String.valueOf(e);
         }
         return  result;
     }
 
-    @RequestMapping(value = "/fromserver", method = RequestMethod.GET)
+    @RequestMapping(value = "/route", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
-    public String fromServer(HttpServletRequest request)
+    public String sendRoute(HttpServletRequest request)
     {
         String result;
         String agentCode = null;
@@ -49,7 +50,7 @@ public class RestfulController {
         }
 
         try {
-            result = getFileContent(agentCode);
+            result = getFileContent(agentCode, "route.mv");
         }catch(Exception e){
             result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
         }
@@ -57,28 +58,87 @@ public class RestfulController {
         return  result;
     }
 
-    private String getFileContent(String agentCode) throws Exception {
+    @RequestMapping(value = "/goods", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public String sendGoods(HttpServletRequest request)
+    {
+        String result;
+        String agentCode = null;
+        try {
+            agentCode = request.getHeader("agent-code").trim();
+            result = agentCode;
+        }catch (Exception e){
+            result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
+        }
+
+        try {
+            result = getFileContent(agentCode, "goods.mv");
+        }catch(Exception e){
+            result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
+        }
+
+        return  result;
+    }
+
+    private String getFileContent(String agentCode, String fileName) throws Exception {
         StringBuilder fileContent = new StringBuilder();
-        try(FileReader reader = new FileReader(new StringBuilder().append("D:\\Development\\mobiviks\\").append(agentCode).append("ad.mv").toString()))
-        {
-            Scanner scan = new Scanner(reader);
+        String filePath = new StringBuilder().append("D:\\Development\\mobiviks\\obmin\\out\\").append(agentCode).append("_").append(fileName).toString();
+
+        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader( new FileInputStream(filePath), "windows-1251") )) {
             String line;
-            while (scan.hasNextLine()) {
-                fileContent.append(scan.nextLine());
+            while ((line = bufferedReader.readLine()) != null) {
+                fileContent.append(line);
             }
-            reader.close();
-            scan.close();
-
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        catch(IOException e){
-
-            fileContent.append("{\"error\": \"").append(e.getMessage()).append("\"}");
-        }
-            return fileContent.toString().trim();
+//        System.out.print("-------------------------------------------");
+//        System.out.print("fileContent = "+fileContent.toString().trim());
+        return fileContent.toString().trim();
     }
 
-    private String makeErrorRespond(){
+    @RequestMapping(value = "/payments", method = RequestMethod.GET)
+    public @ResponseBody String receivePayments(HttpServletRequest request, @RequestParam("p") String content)
+    {
+        System.out.println("-------------------------------------------");
+        System.out.println("body in model: " + content);
 
-        return null;
+        String result;
+        String agentCode = null;
+        try {
+            agentCode = request.getHeader("agent-code").trim();
+        }catch (Exception e){
+            result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
+            return  result;
+        }
+
+
+        String fileName = agentCode.trim() + "_payments.mv";
+        try {
+            result = saveToFile(fileName, content);
+        }catch(Exception e){
+            result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
+        }
+        return  result;
+
     }
+
+    private String saveToFile(String fileName, String content) {
+        String filePath = new StringBuilder().append("D:\\Development\\mobiviks\\obmin\\in\\").append(fileName).toString();
+
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter( new FileOutputStream(filePath), "windows-1251") )) {
+//            String line;
+//            while ((line = bufferedWriter.readLine()) != null) {
+//                fileContent.append(line);
+//            }
+            bufferedWriter.write(content);
+        }
+        catch (Exception e){
+            return  "Error writing file";
+        }
+
+        return  "success";
+    }
+
+
 }

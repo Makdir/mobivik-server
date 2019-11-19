@@ -13,7 +13,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.authorizeRequests()
-        		.antMatchers("/","/fromserver","/test").permitAll()
+        		.antMatchers("/test","/goods","/route","/payments").permitAll()
 				.antMatchers("/css/**","/images/**","/js/**","/plugins/**").permitAll()
         		.antMatchers("/admin").hasRole("ADMIN")
 				.anyRequest().authenticated()
