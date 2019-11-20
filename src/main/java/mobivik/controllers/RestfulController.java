@@ -50,7 +50,7 @@ public class RestfulController {
         }
 
         try {
-            result = getFileContent(agentCode, "route.mv");
+            result = getFileContent(agentCode+ "_route.mv");
         }catch(Exception e){
             result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
         }
@@ -72,7 +72,7 @@ public class RestfulController {
         }
 
         try {
-            result = getFileContent(agentCode, "goods.mv");
+            result = getFileContent(agentCode+ "_goods.mv");
         }catch(Exception e){
             result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
         }
@@ -80,9 +80,9 @@ public class RestfulController {
         return  result;
     }
 
-    private String getFileContent(String agentCode, String fileName) throws Exception {
+    private String getFileContent(String fileName) throws Exception {
         StringBuilder fileContent = new StringBuilder();
-        String filePath = new StringBuilder().append("D:\\Development\\mobiviks\\obmin\\out\\").append(agentCode).append("_").append(fileName).toString();
+        String filePath = new StringBuilder().append("D:\\Development\\mobiviks\\obmin\\out\\").append(fileName).toString();
 
         try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader( new FileInputStream(filePath), "windows-1251") )) {
             String line;
