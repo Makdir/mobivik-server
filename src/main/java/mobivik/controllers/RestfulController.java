@@ -18,6 +18,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 @RestController
 public class RestfulController {
@@ -97,11 +98,16 @@ public class RestfulController {
         return fileContent.toString().trim();
     }
 
-    @RequestMapping(value = "/payments", method = RequestMethod.GET)
-    public @ResponseBody String receivePayments(HttpServletRequest request, @RequestParam("p") String content)
+    @RequestMapping(value = "/payments", method = RequestMethod.POST)
+    public @ResponseBody String receivePayments(HttpServletRequest request)
     {
-        System.out.println("-------------------------------------------");
-        System.out.println("body in model: " + content);
+        String body = "";
+        try {
+            body = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+       System.out.println("route agent_code: " + body);
 
         String result;
         String agentCode = null;
@@ -115,7 +121,7 @@ public class RestfulController {
 
         String fileName = agentCode.trim() + "_payments.mv";
         try {
-            result = saveToFile(fileName, content);
+            result = saveToFile(fileName, body);
         }catch(Exception e){
             result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
         }
