@@ -37,25 +37,19 @@ public class RestfulController {
         return  result;
     }
 
+    @RequestMapping(value = "/settings", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public String sendSettings(HttpServletRequest request)
+    {
+        String result = sendData("settings", request);
+        return  result;
+    }
+
     @RequestMapping(value = "/route", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public String sendRoute(HttpServletRequest request)
     {
-        String result;
-        String agentCode = null;
-        try {
-            agentCode = request.getHeader("agent-code").trim();
-            result = agentCode;
-        }catch (Exception e){
-            result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
-        }
-
-        try {
-            result = getFileContent(agentCode+ "_route.mv");
-        }catch(Exception e){
-            result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
-        }
-
+        String result = sendData("route", request);
         return  result;
     }
 
@@ -63,27 +57,13 @@ public class RestfulController {
     @ResponseBody
     public String sendGoods(HttpServletRequest request)
     {
-        String result;
-        String agentCode = null;
-        try {
-            agentCode = request.getHeader("agent-code").trim();
-            result = agentCode;
-        }catch (Exception e){
-            result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
-        }
-
-        try {
-            result = getFileContent(agentCode+ "_goods.mv");
-        }catch(Exception e){
-            result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
-        }
-
+        String result = sendData("goods", request);
         return  result;
     }
 
     private String getFileContent(String fileName) throws Exception {
         StringBuilder fileContent = new StringBuilder();
-        String filePath = new StringBuilder().append("D:\\Development\\mobiviks\\obmin\\out\\").append(fileName).toString();
+        String filePath = new StringBuilder().append("D:\\mobivik\\obmin\\out\\").append(fileName).toString();
 
         try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader( new FileInputStream(filePath), "windows-1251") )) {
             String line;
@@ -127,6 +107,57 @@ public class RestfulController {
         }
         return  result;
 
+    }
+    @RequestMapping(value = "/buyorders", method = RequestMethod.POST)
+    public @ResponseBody String receiveBuyorders(HttpServletRequest request)
+    {
+        String body = "";
+        try {
+            body = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("route agent_code: " + body);
+
+        String result;
+        String agentCode = null;
+        try {
+            agentCode = request.getHeader("agent-code").trim();
+        }catch (Exception e){
+            result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
+            return  result;
+        }
+
+
+        String fileName = agentCode.trim() + "_buyorders.mv";
+        try {
+            result = saveToFile(fileName, body);
+        }catch(Exception e){
+            result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
+        }
+        return  result;
+
+    }
+
+    private String sendData(String dataName, HttpServletRequest request){
+        String result;
+        String agentCode = null;
+        try {
+            agentCode = request.getHeader("agent-code").trim();
+            result = agentCode;
+        }catch (Exception e){
+            result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
+        }
+
+        String fileName = new StringBuilder().append(agentCode).append("_").append(dataName).append(".mv").toString();
+
+        try {
+            result = getFileContent(fileName);
+        }catch(Exception e){
+            result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
+        }
+
+        return  result;
     }
 
     private String saveToFile(String fileName, String content) {
