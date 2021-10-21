@@ -61,21 +61,12 @@ public class RestfulController {
         return  result;
     }
 
-    private String getFileContent(String fileName) throws Exception {
-        StringBuilder fileContent = new StringBuilder();
-        String filePath = new StringBuilder().append("D:\\mobivik\\obmin\\out\\").append(fileName).toString();
-
-        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader( new FileInputStream(filePath), "windows-1251") )) {
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                fileContent.append(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-//        System.out.print("-------------------------------------------");
-//        System.out.print("fileContent = "+fileContent.toString().trim());
-        return fileContent.toString().trim();
+    @RequestMapping(value = "/sales", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public String sendSales(HttpServletRequest request)
+    {
+        String result = sendData("sales", request);
+        return  result;
     }
 
     @RequestMapping(value = "/payments", method = RequestMethod.POST)
@@ -97,7 +88,6 @@ public class RestfulController {
             result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
             return  result;
         }
-
 
         String fileName = agentCode.trim() + "_payments.mv";
         try {
@@ -127,7 +117,6 @@ public class RestfulController {
             result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
             return  result;
         }
-
 
         String fileName = agentCode.trim() + "_buyorders.mv";
         try {
@@ -159,11 +148,29 @@ public class RestfulController {
 
         return  result;
     }
+    
+    private String getFileContent(String fileName) throws Exception {
+        StringBuilder fileContent = new StringBuilder();
+        String filePath = new StringBuilder().append("D:\\mobivik\\obmin\\out\\").append(fileName).toString();
+
+        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader( new FileInputStream(filePath), "windows-1251") )) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                fileContent.append(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+//        System.out.print("-------------------------------------------");
+//        System.out.print("fileContent = "+fileContent.toString().trim());
+        return fileContent.toString().trim();
+    }
 
     private String saveToFile(String fileName, String content) {
-        String filePath = new StringBuilder().append("D:\\Development\\mobiviks\\obmin\\in\\").append(fileName).toString();
+        String filePath = new StringBuilder().append("D:\\mobivik\\obmin\\in\\").append(fileName).toString();
 
-        try (BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter( new FileOutputStream(filePath), "windows-1251") )) {
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter( new FileOutputStream(filePath), "CP866" ) )) //"IBM866"
+        {
 //            String line;
 //            while ((line = bufferedWriter.readLine()) != null) {
 //                fileContent.append(line);
