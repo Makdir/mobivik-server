@@ -17,6 +17,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
@@ -89,9 +90,11 @@ public class RestfulController {
             return  result;
         }
 
+        String suffix = getSuffix(request);
+
         String fileName = agentCode.trim() + "_payments.mv";
         try {
-            result = saveToFile(fileName, body);
+            result = saveToFile(fileName, body, suffix);
         }catch(Exception e){
             result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
         }
@@ -118,14 +121,33 @@ public class RestfulController {
             return  result;
         }
 
+        String suffix = getSuffix(request);
+
         String fileName = agentCode.trim() + "_buyorders.mv";
         try {
-            result = saveToFile(fileName, body);
+            result = saveToFile(fileName, body, suffix);
         }catch(Exception e){
             result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
         }
         return  result;
 
+    }
+
+    /* Suffix for subdirectory */
+    private String getSuffix(HttpServletRequest request){
+
+        String organization = "";
+        try {
+            organization = request.getHeader("organization");
+        }catch (Exception e){
+            return "";
+        }
+
+        if(null == organization) return "";
+
+        if(organization.trim()=="") return "";
+
+        return "_" + organization.trim().toLowerCase(Locale.ROOT);
     }
 
     private String sendData(String dataName, HttpServletRequest request){
@@ -137,11 +159,12 @@ public class RestfulController {
         }catch (Exception e){
             result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
         }
-
         String fileName = new StringBuilder().append(agentCode).append("_").append(dataName).append(".mv").toString();
 
+        String suffix = getSuffix(request);
+
         try {
-            result = getFileContent(fileName);
+            result = getFileContent(fileName, suffix);
         }catch(Exception e){
             result = new StringBuilder().append("{\"error\": \"").append(e.getMessage()).append("\"}").toString();
         }
@@ -149,9 +172,9 @@ public class RestfulController {
         return  result;
     }
     
-    private String getFileContent(String fileName) throws Exception {
+    private String getFileContent(String fileName, String suffix) throws Exception {
         StringBuilder fileContent = new StringBuilder();
-        String filePath = new StringBuilder().append("D:\\mobivik\\obmin\\out\\").append(fileName).toString();
+        String filePath = new StringBuilder().append("D:\\mobivik\\obmin").append(suffix).append("\\out\\").append(fileName).toString();
 
         try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader( new FileInputStream(filePath), "windows-1251") )) {
             String line;
@@ -166,8 +189,8 @@ public class RestfulController {
         return fileContent.toString().trim();
     }
 
-    private String saveToFile(String fileName, String content) {
-        String filePath = new StringBuilder().append("D:\\mobivik\\obmin\\in\\").append(fileName).toString();
+    private String saveToFile(String fileName, String content, String suffix) {
+        String filePath = new StringBuilder().append("D:\\mobivik\\obmin").append(suffix).append("\\in\\").append(fileName).toString();
 
         try (BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter( new FileOutputStream(filePath), "CP866" ) )) //"IBM866"
         {
